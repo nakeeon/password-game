@@ -88,8 +88,19 @@
   <h1>🔐 Пін-коди і паролі</h1>
   <p class="subtitle">Навчись захищати свої дані!</p>
 
+  <!-- NAME INPUT -->
+  <div id="nameScreen" class="menu">
+    <div class="card" style="text-align:center">
+      <div style="font-size:48px;margin-bottom:10px">👋</div>
+      <div class="card-title" style="text-align:center;font-size:22px">Як тебе звати?</div>
+      <input type="text" class="password-input" id="nameInput" placeholder="Введи своє ім'я..." style="font-size:20px;letter-spacing:0;margin-top:10px" onkeydown="if(event.key==='Enter')saveName()">
+      <button class="menu-btn btn-create" onclick="saveName()" style="margin-top:12px;text-align:center;font-size:20px">Почати! 🚀</button>
+    </div>
+  </div>
+
   <!-- MENU -->
-  <div id="menu" class="menu">
+  <div id="menu" class="menu" style="display:none">
+    <div style="text-align:center;font-size:18px;color:#555;margin-bottom:8px">Привіт, <b id="displayName"></b>! Обери гру:</div>
     <button class="menu-btn btn-create" onclick="startGame(1)"><span>🔑</span> Створи надійний пароль</button>
     <button class="menu-btn btn-detect" onclick="startGame(2)"><span>🕵️</span> Детектив паролів</button>
     <button class="menu-btn btn-share" onclick="startGame(3)"><span>🤫</span> Кому можна сказати пароль?</button>
@@ -137,6 +148,34 @@
 </div>
 
 <script>
+// ===== GOOGLE FORM =====
+const FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLSf8ztX6jF4_4UcxvYRyVCYa4TZmnxvDIZx3GWHoRi4ZpqjiOQ/formResponse';
+const FIELD_NAME='entry.74381009';
+const FIELD_GAME='entry.7ddeda3d';
+const FIELD_SCORE='entry.54eb8c37';
+const FIELD_MAX='entry.2861900f';
+
+let playerName='';
+
+function saveName(){
+  const n=document.getElementById('nameInput').value.trim();
+  if(!n){alert('Напиши своє ім\'я!');return}
+  playerName=n;
+  document.getElementById('displayName').textContent=n;
+  document.getElementById('nameScreen').style.display='none';
+  document.getElementById('menu').style.display='block';
+}
+
+function sendResult(game, score, max){
+  const data=new URLSearchParams();
+  data.append(FIELD_NAME, playerName);
+  data.append(FIELD_GAME, game);
+  data.append(FIELD_SCORE, score.toString());
+  data.append(FIELD_MAX, max.toString());
+  // Send silently via no-cors fetch
+  fetch(FORM_URL, {method:'POST', mode:'no-cors', body:data}).catch(()=>{});
+}
+
 // ===== MENU =====
 function startGame(n){
   document.getElementById('menu').style.display='none';
@@ -245,6 +284,7 @@ function showDetectResult(){
   document.getElementById('detectCounter').textContent='';
   const pct=detectScore/passwords.length*100;
   let emoji,msg;
+  sendResult('Детектив паролів', detectScore, passwords.length);
   if(pct>=90){emoji='🏆🎉';msg='Ти справжній детектив паролів!';launchConfetti()}
   else if(pct>=70){emoji='👏🕵️';msg='Чудовий результат!';launchConfetti()}
   else if(pct>=50){emoji='🤔💪';msg='Непогано, але є над чим попрацювати!'}
@@ -325,6 +365,7 @@ function showShareResult(){
   document.getElementById('shareCounter').textContent='';
   const pct=shareScore2/situations.length*100;
   let emoji,msg;
+  sendResult('Кому можна сказати пароль', shareScore2, situations.length);
   if(pct>=90){emoji='🛡️🎉';msg='Ти чудово знаєш правила безпеки!';launchConfetti()}
   else if(pct>=70){emoji='👏🔒';msg='Добре! Ти майже експерт!';launchConfetti()}
   else if(pct>=50){emoji='🤔🔑';msg='Непогано, але будь уважнішим!'}
