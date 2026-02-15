@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔐 Пін-коди і паролі</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Comic Neue','Comic Sans MS',cursive;background:linear-gradient(135deg,#e8f0fe,#f0e8fe,#e8feef);min-height:100vh;padding:10px}
+  .container{max-width:520px;margin:0 auto}
+  h1{text-align:center;font-size:26px;color:#2c3e80;margin:10px 0}
+  .subtitle{text-align:center;font-size:15px;color:#666;margin-bottom:15px}
+
+  /* Menu */
+  .menu{text-align:center}
+  .menu-btn{display:block;width:100%;padding:18px 20px;margin:10px 0;border:none;border-radius:16px;font-size:20px;font-weight:700;font-family:inherit;cursor:pointer;color:white;box-shadow:0 3px 12px rgba(0,0,0,0.15);transition:transform 0.15s;text-align:left}
+  .menu-btn:active{transform:scale(0.97)}
+  .menu-btn span{font-size:28px;margin-right:8px;vertical-align:middle}
+  .btn-create{background:linear-gradient(135deg,#4CAF50,#2e7d32)}
+  .btn-detect{background:linear-gradient(135deg,#2196F3,#1565c0)}
+  .btn-share{background:linear-gradient(135deg,#FF9800,#e65100)}
+
+  /* Game screens */
+  .game-screen{display:none}
+  .back-btn{background:none;border:2px solid #ddd;border-radius:20px;padding:6px 16px;font-size:14px;font-family:inherit;color:#888;cursor:pointer;margin-bottom:12px}
+  .back-btn:active{background:#f0f0f0}
+
+  /* Common card */
+  .card{background:white;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
+  .card-title{font-size:18px;font-weight:700;color:#333;margin-bottom:8px}
+
+  /* === GAME 1: Create password === */
+  .password-input{width:100%;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:22px;font-family:inherit;text-align:center;letter-spacing:3px;outline:none;transition:border-color 0.3s}
+  .password-input:focus{border-color:#4a90d9}
+  .strength-bar{height:12px;border-radius:6px;background:#eee;margin:10px 0;overflow:hidden}
+  .strength-fill{height:100%;border-radius:6px;transition:width 0.4s,background 0.4s}
+  .strength-text{text-align:center;font-size:18px;font-weight:700;min-height:28px}
+  .rules-list{list-style:none;padding:0;margin:10px 0}
+  .rules-list li{padding:6px 0;font-size:16px;display:flex;align-items:center;gap:8px}
+  .rule-icon{font-size:20px;width:28px;text-align:center}
+  .tip-box{background:#fff9c4;border-radius:12px;padding:12px;margin-top:10px;font-size:15px;color:#795548;text-align:center}
+
+  /* === GAME 2: Detective === */
+  .password-card{background:white;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.08);text-align:center;transition:transform 0.2s}
+  .password-display{font-size:28px;font-weight:700;color:#333;font-family:'Courier New',monospace;letter-spacing:2px;margin:8px 0;word-break:break-all}
+  .answer-btns{display:flex;gap:10px;justify-content:center;margin-top:10px}
+  .answer-btn{padding:10px 24px;border-radius:30px;border:none;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform 0.15s}
+  .answer-btn:active{transform:scale(0.9)}
+  .btn-safe{background:#e8f5e9;color:#2e7d32}
+  .btn-unsafe{background:#ffebee;color:#c62828}
+  .feedback{font-size:16px;font-weight:700;margin-top:8px;min-height:24px;animation:fadeIn 0.3s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+  .progress-dots{display:flex;justify-content:center;gap:6px;margin:10px 0}
+  .dot{width:14px;height:14px;border-radius:50%;background:#ddd;transition:background 0.3s}
+  .dot-correct{background:#4CAF50}
+  .dot-wrong{background:#f44336}
+  .dot-current{background:#FFD700;box-shadow:0 0 8px rgba(255,215,0,0.5)}
+
+  /* === GAME 3: Share or not === */
+  .situation-card{background:white;border-radius:16px;padding:20px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.08);text-align:center}
+  .situation-emoji{font-size:52px;margin-bottom:10px}
+  .situation-text{font-size:18px;color:#333;line-height:1.5;margin-bottom:14px}
+  .share-btns{display:flex;gap:12px;justify-content:center}
+  .share-btn{padding:12px 28px;border-radius:30px;border:none;font-size:20px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform 0.15s}
+  .share-btn:active{transform:scale(0.9)}
+  .btn-yes{background:#e8f5e9;color:#2e7d32}
+  .btn-no{background:#ffebee;color:#c62828}
+  .explain{font-size:15px;color:#555;margin-top:10px;min-height:20px;line-height:1.4}
+
+  /* Score */
+  .score-section{background:white;border-radius:20px;padding:20px;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,0.1);margin-top:15px}
+  .score-big{font-size:52px;font-weight:700;color:#2c3e80}
+  .score-label{font-size:16px;color:#888}
+  .score-emoji{font-size:48px;margin:8px 0}
+  .score-msg{font-size:20px;font-weight:700;margin:8px 0}
+  .retry-btn{background:linear-gradient(135deg,#4CAF50,#2e7d32);color:white;border:none;border-radius:30px;padding:12px 32px;font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:12px}
+  .retry-btn:active{transform:scale(0.95)}
+
+  .confetti-piece{position:fixed;border-radius:2px;animation:confettiFall 3s ease-out forwards;pointer-events:none;z-index:1000}
+  @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+  .counter{font-size:14px;color:#999;text-align:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔐 Пін-коди і паролі</h1>
+  <p class="subtitle">Навчись захищати свої дані!</p>
+
+  <!-- MENU -->
+  <div id="menu" class="menu">
+    <button class="menu-btn btn-create" onclick="startGame(1)"><span>🔑</span> Створи надійний пароль</button>
+    <button class="menu-btn btn-detect" onclick="startGame(2)"><span>🕵️</span> Детектив паролів</button>
+    <button class="menu-btn btn-share" onclick="startGame(3)"><span>🤫</span> Кому можна сказати пароль?</button>
+  </div>
+
+  <!-- GAME 1: Create Password -->
+  <div id="game1" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Меню</button>
+    <div class="card">
+      <div class="card-title">🔑 Придумай надійний пароль:</div>
+      <input type="text" class="password-input" id="pwdInput" maxlength="20" placeholder="Введи пароль..." oninput="checkPassword()">
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+      <div class="strength-text" id="strengthText"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Правила надійного пароля:</div>
+      <ul class="rules-list">
+        <li><span class="rule-icon" id="r1">⬜</span> Мінімум 6 символів</li>
+        <li><span class="rule-icon" id="r2">⬜</span> Є велика літера (А, Б, В...)</li>
+        <li><span class="rule-icon" id="r3">⬜</span> Є маленька літера (а, б, в...)</li>
+        <li><span class="rule-icon" id="r4">⬜</span> Є цифра (1, 2, 3...)</li>
+        <li><span class="rule-icon" id="r5">⬜</span> Є спецсимвол (!, @, #...)</li>
+      </ul>
+    </div>
+    <div class="tip-box">🪥 <b>Запам'ятай:</b> Пароль — як зубна щітка: довгий, складний і нікому не даємо!</div>
+  </div>
+
+  <!-- GAME 2: Detective -->
+  <div id="game2" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Меню</button>
+    <div class="counter" id="detectCounter"></div>
+    <div class="progress-dots" id="detectDots"></div>
+    <div id="detectCard"></div>
+    <div id="detectScore" style="display:none"></div>
+  </div>
+
+  <!-- GAME 3: Share -->
+  <div id="game3" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Меню</button>
+    <div class="counter" id="shareCounter"></div>
+    <div class="progress-dots" id="shareDots"></div>
+    <div id="shareCard"></div>
+    <div id="shareScore" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ===== MENU =====
+function startGame(n){
+  document.getElementById('menu').style.display='none';
+  document.getElementById('game'+n).style.display='block';
+  if(n===2) initDetective();
+  if(n===3) initShare();
+}
+function backToMenu(){
+  document.querySelectorAll('.game-screen').forEach(g=>g.style.display='none');
+  document.getElementById('menu').style.display='block';
+}
+
+// ===== GAME 1: Create Password =====
+function checkPassword(){
+  const pwd=document.getElementById('pwdInput').value;
+  let score=0;
+  const checks=[
+    pwd.length>=6,
+    /[A-ZА-ЯҐЄІЇ]/.test(pwd),
+    /[a-zа-яґєії]/.test(pwd),
+    /[0-9]/.test(pwd),
+    /[^a-zA-Zа-яА-ЯґєіїҐЄІЇ0-9]/.test(pwd)
+  ];
+  checks.forEach((c,i)=>{
+    document.getElementById('r'+(i+1)).textContent=c?'✅':'⬜';
+    if(c) score++;
+  });
+  const fill=document.getElementById('strengthFill');
+  const txt=document.getElementById('strengthText');
+  const pct=score/5*100;
+  fill.style.width=pct+'%';
+  if(score<=1){fill.style.background='#f44336';txt.textContent='🔴 Дуже слабкий';txt.style.color='#f44336'}
+  else if(score<=2){fill.style.background='#FF9800';txt.textContent='🟠 Слабкий';txt.style.color='#FF9800'}
+  else if(score<=3){fill.style.background='#FFD700';txt.textContent='🟡 Середній';txt.style.color='#DAA520'}
+  else if(score<=4){fill.style.background='#4CAF50';txt.textContent='🟢 Надійний!';txt.style.color='#4CAF50'}
+  else{fill.style.background='#2e7d32';txt.textContent='🏆 Супер-надійний!';txt.style.color='#2e7d32';if(pwd.length>=6)launchConfetti()}
+  if(!pwd){txt.textContent='';fill.style.width='0%'}
+}
+
+// ===== GAME 2: Detective =====
+const passwords=[
+  {pwd:'123456',safe:false,why:'Це найпопулярніший пароль у світі! Хакери перевіряють його першим.'},
+  {pwd:'Сонце5!',safe:true,why:'Є велика літера, цифра і спецсимвол — молодець!'},
+  {pwd:'password',safe:false,why:'"Password" — це слово "пароль" англійською. Занадто очевидно!'},
+  {pwd:'МійКот2024',safe:true,why:'Довгий, є великі й малі літери та цифри — добре!'},
+  {pwd:'qwerty',safe:false,why:'Це просто перші літери на клавіатурі — дуже легко вгадати!'},
+  {pwd:'111111',safe:false,why:'Однакові цифри — найлегше вгадати!'},
+  {pwd:'Зірка★8',safe:true,why:'Креативний пароль зі спецсимволом — чудово!'},
+  {pwd:'мама',safe:false,why:'Занадто коротке і просте слово. Легко вгадати!'},
+  {pwd:'Школа3#',safe:true,why:'Є велика літера, цифра та спецсимвол — надійний!'},
+  {pwd:'0000',safe:false,why:'Чотири нулі — це перше, що спробують!'},
+];
+
+let detectIdx=0, detectScore=0, detectAnswers=[];
+
+function initDetective(){
+  detectIdx=0;detectScore=0;detectAnswers=[];
+  document.getElementById('detectScore').style.display='none';
+  showDetectDots();
+  showDetectCard();
+}
+
+function showDetectDots(){
+  const dots=document.getElementById('detectDots');
+  dots.innerHTML='';
+  passwords.forEach((_,i)=>{
+    const d=document.createElement('span');d.className='dot';
+    if(i<detectIdx){d.className+=' '+(detectAnswers[i]?'dot-correct':'dot-wrong')}
+    else if(i===detectIdx){d.className+=' dot-current'}
+    dots.appendChild(d);
+  });
+  document.getElementById('detectCounter').textContent=`Питання ${detectIdx+1} з ${passwords.length}`;
+}
+
+function showDetectCard(){
+  if(detectIdx>=passwords.length){showDetectResult();return}
+  const p=passwords[detectIdx];
+  document.getElementById('detectCard').innerHTML=`
+    <div class="password-card">
+      <div style="font-size:14px;color:#888">Цей пароль надійний?</div>
+      <div class="password-display">${p.pwd}</div>
+      <div class="answer-btns">
+        <button class="answer-btn btn-safe" onclick="answerDetect(true)">✅ Надійний</button>
+        <button class="answer-btn btn-unsafe" onclick="answerDetect(false)">❌ Ненадійний</button>
+      </div>
+      <div class="feedback" id="detectFeedback"></div>
+    </div>`;
+}
+
+function answerDetect(isSafe){
+  const p=passwords[detectIdx];
+  const correct=isSafe===p.safe;
+  if(correct) detectScore++;
+  detectAnswers.push(correct);
+  const fb=document.getElementById('detectFeedback');
+  fb.innerHTML=correct
+    ?`<span style="color:#2e7d32">✅ Правильно!</span><br>${p.why}`
+    :`<span style="color:#c62828">❌ Неправильно!</span><br>${p.why}`;
+  // Disable buttons
+  document.querySelectorAll('.answer-btn').forEach(b=>b.disabled=true);
+  setTimeout(()=>{detectIdx++;showDetectDots();showDetectCard()},2200);
+}
+
+function showDetectResult(){
+  document.getElementById('detectCard').innerHTML='';
+  document.getElementById('detectCounter').textContent='';
+  const pct=detectScore/passwords.length*100;
+  let emoji,msg;
+  if(pct>=90){emoji='🏆🎉';msg='Ти справжній детектив паролів!';launchConfetti()}
+  else if(pct>=70){emoji='👏🕵️';msg='Чудовий результат!';launchConfetti()}
+  else if(pct>=50){emoji='🤔💪';msg='Непогано, але є над чим попрацювати!'}
+  else{emoji='📚';msg='Повтори правила і спробуй ще раз!'}
+  document.getElementById('detectScore').style.display='block';
+  document.getElementById('detectScore').innerHTML=`
+    <div class="score-section">
+      <div class="score-emoji">${emoji}</div>
+      <div class="score-big">${detectScore}/${passwords.length}</div>
+      <div class="score-msg">${msg}</div>
+      <button class="retry-btn" onclick="initDetective()">🔄 Спробувати ще</button>
+    </div>`;
+}
+
+// ===== GAME 3: Share =====
+const situations=[
+  {emoji:'👦',text:'Друг у школі каже: "Скажи пароль від гри, я хочу пограти!"',share:false,why:'Навіть найкращому другові не можна давати пароль — він може випадково розказати комусь.'},
+  {emoji:'👩',text:'Мама просить пароль від планшета.',share:true,why:'Батьки — це ті люди, яким можна довіряти паролі. Вони допоможуть, якщо щось трапиться.'},
+  {emoji:'🖥️',text:'На сайті з\'явилось повідомлення: "Введи свій пароль, щоб виграти приз!"',share:false,why:'Це шахрайство! Справжні сайти ніколи не просять пароль у спливаючих вікнах.'},
+  {emoji:'👨',text:'Тато допомагає налаштувати комп\'ютер і просить пароль.',share:true,why:'Тато — рідна людина, яка хоче допомогти. Батькам можна довіряти!'},
+  {emoji:'👧',text:'Однокласниця шепоче: "Скажи пароль, я нікому-нікому не скажу!"',share:false,why:'Навіть якщо обіцяють не розказувати — можуть забути обіцянку. Пароль тільки твій!'},
+  {emoji:'📱',text:'Незнайомець у чаті пише: "Привіт! Який у тебе пароль?"',share:false,why:'Ніколи не давай пароль незнайомцям! Це може бути шахрай.'},
+  {emoji:'👩‍🏫',text:'Вчителька просить пароль від шкільного акаунту, щоб допомогти.',share:true,why:'Вчитель — довірена дорослі людина. У школі це нормально.'},
+  {emoji:'📧',text:'Прийшов лист: "Ваш акаунт зламано! Надішліть пароль для перевірки."',share:false,why:'Це фішинг — обман! Справжні сервіси ніколи не просять пароль через email.'},
+];
+
+let shareIdx=0,shareScore2=0,shareAnswers=[];
+
+function initShare(){
+  shareIdx=0;shareScore2=0;shareAnswers=[];
+  document.getElementById('shareScore').style.display='none';
+  showShareDots();
+  showShareCard();
+}
+
+function showShareDots(){
+  const dots=document.getElementById('shareDots');
+  dots.innerHTML='';
+  situations.forEach((_,i)=>{
+    const d=document.createElement('span');d.className='dot';
+    if(i<shareIdx){d.className+=' '+(shareAnswers[i]?'dot-correct':'dot-wrong')}
+    else if(i===shareIdx){d.className+=' dot-current'}
+    dots.appendChild(d);
+  });
+  document.getElementById('shareCounter').textContent=`Ситуація ${shareIdx+1} з ${situations.length}`;
+}
+
+function showShareCard(){
+  if(shareIdx>=situations.length){showShareResult();return}
+  const s=situations[shareIdx];
+  document.getElementById('shareCard').innerHTML=`
+    <div class="situation-card">
+      <div class="situation-emoji">${s.emoji}</div>
+      <div class="situation-text">${s.text}</div>
+      <div class="share-btns">
+        <button class="share-btn btn-yes" onclick="answerShare(true)">✅ Можна</button>
+        <button class="share-btn btn-no" onclick="answerShare(false)">🚫 Не можна</button>
+      </div>
+      <div class="explain" id="shareExplain"></div>
+    </div>`;
+}
+
+function answerShare(yes){
+  const s=situations[shareIdx];
+  const correct=yes===s.share;
+  if(correct) shareScore2++;
+  shareAnswers.push(correct);
+  const ex=document.getElementById('shareExplain');
+  ex.innerHTML=correct
+    ?`<span style="color:#2e7d32">✅ Правильно!</span><br>${s.why}`
+    :`<span style="color:#c62828">❌ Неправильно!</span><br>${s.why}`;
+  document.querySelectorAll('.share-btn').forEach(b=>b.disabled=true);
+  setTimeout(()=>{shareIdx++;showShareDots();showShareCard()},2800);
+}
+
+function showShareResult(){
+  document.getElementById('shareCard').innerHTML='';
+  document.getElementById('shareCounter').textContent='';
+  const pct=shareScore2/situations.length*100;
+  let emoji,msg;
+  if(pct>=90){emoji='🛡️🎉';msg='Ти чудово знаєш правила безпеки!';launchConfetti()}
+  else if(pct>=70){emoji='👏🔒';msg='Добре! Ти майже експерт!';launchConfetti()}
+  else if(pct>=50){emoji='🤔🔑';msg='Непогано, але будь уважнішим!'}
+  else{emoji='📚';msg='Повтори правила безпеки і спробуй ще!'}
+  document.getElementById('shareScore').style.display='block';
+  document.getElementById('shareScore').innerHTML=`
+    <div class="score-section">
+      <div class="score-emoji">${emoji}</div>
+      <div class="score-big">${shareScore2}/${situations.length}</div>
+      <div class="score-msg">${msg}</div>
+      <button class="retry-btn" onclick="initShare()">🔄 Спробувати ще</button>
+    </div>`;
+}
+
+// ===== Confetti =====
+function launchConfetti(){
+  const colors=['#FFD700','#FF6B6B','#4CAF50','#2196F3','#FF9800','#9C27B0'];
+  for(let i=0;i<35;i++){setTimeout(()=>{const p=document.createElement('div');p.className='confetti-piece';p.style.left=Math.random()*100+'vw';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDuration=(2+Math.random()*2)+'s';p.style.width=(6+Math.random()*8)+'px';p.style.height=(6+Math.random()*8)+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),4000)},i*50)}
+}
+</script>
+</body>
+</html>
